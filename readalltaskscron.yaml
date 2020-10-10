@@ -4,7 +4,7 @@ metadata:
   name: gazzettataskexcelcron
 spec:
     schedule: "*/10 * * * *"
-    concurrencyPolicy: Replace
+    concurrencyPolicy: Allow
     jobTemplate:
         spec:
             template:
