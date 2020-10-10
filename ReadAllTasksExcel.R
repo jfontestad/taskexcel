@@ -471,7 +471,7 @@ update_file = call_graph_url(me$token,
 
 file_id = update_file$value[[which(sapply(update_file$value, function(x) x$name == "Active TSTA Tasks.xlsx"))]]$id
 
-#update_excel(file_id, active_tasks)
+update_excel(file_id, active_tasks)
 
 print("going to update the all excel")
 all_tasks = tasks_with_bucket_names %>%
