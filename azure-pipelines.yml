@@ -40,6 +40,6 @@ stages:
         kubernetesServiceEndpoint: 'AMUKubernetes'
         command: 'apply'
         useConfigurationFile: true
-        configuration: 'readalltasks.yaml'
+        configuration: 'readalltaskscron.yaml'
         secretType: 'dockerRegistry'
         containerRegistryType: 'Azure Container Registry'
