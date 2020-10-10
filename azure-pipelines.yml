@@ -28,12 +28,6 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: |
           $(tag)
-- stage: Deploy
-  displayName: Deploy to Kubernetes
-  jobs:  
-  - job: Deploy
-    displayName: Deploy to Kubernetes
-    steps:
     - task: Kubernetes@1
       inputs:
         connectionType: 'Kubernetes Service Connection'
