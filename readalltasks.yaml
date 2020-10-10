@@ -4,6 +4,6 @@ metadata:
   name: gazzettataskexcel
 spec:
   containers:
-  - name: gazzetta1
-    image: efsadsreg.azurecr.io/readall19schedule
+  - name: gazzettataskexcel
+    image: efsadsreg.azurecr.io/taskexcel
   
