@@ -32,6 +32,3 @@ for (count in seq(32)) {
 }
 print(paste("*** Read all tasks closing at: ", Sys.time()))
 
-#restore output to console
-sink(type="output") 
-sink(type="message")
