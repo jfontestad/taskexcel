@@ -9,6 +9,7 @@ spec:
         spec:
             template:
                 spec:
+                    restartPolicy: Never
                     containers:
                     - name: gazzettataskexcelcron
                       image: efsadsreg.azurecr.io/taskexcelcron
