@@ -1,0 +1,15 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: gazzettataskexcelcron
+spec:
+    schedule: "*/10 * * * *"
+    concurrencyPolicy: Replace
+    jobTemplate:
+        spec:
+        template:
+            spec:
+            containers:
+            - name: gazzettataskexcelcron
+                image: efsadsreg.azurecr.io/taskexcelcron
+  
