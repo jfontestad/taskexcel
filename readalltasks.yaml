@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gazzettataskexcel
+spec:
+  containers:
+  - name: gazzetta1
+    image: efsadsreg.azurecr.io/readall19schedule
+  
