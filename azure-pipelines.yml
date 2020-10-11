@@ -34,12 +34,9 @@ stages:
   - job: Deploy
     displayName: Deploy Image
     steps:
-    - task: Kubernetes@1
+    - task: KubernetesManifest@0
       inputs:
         connectionType: 'Kubernetes Service Connection'
-        kubernetesServiceEndpoint: 'AMUKubernetes'
-        command: 'apply'
-        useConfigurationFile: true
-        configuration: 'readalltaskscron.yaml'
-        secretType: 'dockerRegistry'
-        containerRegistryType: 'Azure Container Registry'
+        kubernetesServiceConnection: 'AMUKubernetes'
+        manifests: manifests/readalltaskscron.yml
+        containers: efsadsreg.azurecr.io/taskexcel:$(tag)
