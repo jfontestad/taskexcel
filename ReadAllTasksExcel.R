@@ -35,7 +35,9 @@ plans_and_groups = list(c('Tech Invoices 2020','Tech Invoices'),
 # install package AzureGraph if not yet installed
 library(AzureGraph)
 library(jsonlite)
-library(tidyverse)
+library(purrr)
+library(dplyr)
+library(readr)
 library(bizdays)
 library(httr)
 library(functional)
