@@ -36,7 +36,6 @@ stages:
     steps:
     - task: KubernetesManifest@0
       inputs:
-        connectionType: 'Kubernetes Service Connection'
         kubernetesServiceConnection: 'AMUKubernetes'
         manifests: manifests/readalltaskscron.yml
         containers: efsadsreg.azurecr.io/taskexcel:$(tag)
