@@ -8,20 +8,27 @@
 #configuration parameters
 #gather_descriptions indicates if the descriptions of the active tasks shall be downloaded
 #in 15% of cases gathering descriptions leads to an error message
-print(paste("*** Read all tasks starting at: ", Sys.time()))
-load(paste("/home/docker/myEnvironmentReadAllTasksExcel.RData",sep=""))
+print("start batch")
+for (count in seq(32)) {
+    print(paste("start iteration ", count, sep=""))
+    load(paste("/home/docker/myEnvironmentReadAllTasksExcel.RData",sep=""))
 
-#if uncommented redirects stdout and stderr to a file
-#logFile = file(paste("/home/docker/myEnvironmentReadAllTasksExcel.log",sep=""))
-#sink(logFile, type = c("output"))
-#sink(logFile, type = c("message"))
+    #if uncommented redirects stdout and stderr to a file
+    #logFile = file(paste("/home/docker/myEnvironmentReadAllTasksExcel.log",sep=""))
+    #sink(logFile, type = c("output"))
+    #sink(logFile, type = c("message"))
 
-gather_descriptions = FALSE
+    print(paste("*** Read all tasks starting at: ", Sys.time()))
 
-source(paste("/home/docker/ReadAllTasksExcel.R",sep=""))
+    gather_descriptions = FALSE
 
-save.image(file=paste("/home/docker/myEnvironmentReadAllTasksExcel.RData",sep=""))
+    source(paste("/home/docker/ReadAllTasksExcel.R",sep=""))
 
-print("image saved, job completed")
+    save.image(file=paste("/home/docker/myEnvironmentReadAllTasksExcel.RData",sep=""))
+
+    print("image saved, job completed")
+
+    Sys.sleep(900) #15 minutes intervals
+}
 print(paste("*** Read all tasks closing at: ", Sys.time()))
 
