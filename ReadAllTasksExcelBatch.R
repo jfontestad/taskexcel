@@ -9,14 +9,9 @@
 #gather_descriptions indicates if the descriptions of the active tasks shall be downloaded
 #in 15% of cases gathering descriptions leads to an error message
 print("start batch")
-for (count in seq(32)) {
-    print(paste("start iteration ", count, sep=""))
+#for (count in seq(32)) {
+#    print(paste("start iteration ", count, sep=""))
     load(paste("/home/docker/myEnvironmentReadAllTasksExcel.RData",sep=""))
-
-    #if uncommented redirects stdout and stderr to a file
-    #logFile = file(paste("/home/docker/myEnvironmentReadAllTasksExcel.log",sep=""))
-    #sink(logFile, type = c("output"))
-    #sink(logFile, type = c("message"))
 
     print(paste("*** Read all tasks starting at: ", Sys.time()))
 
@@ -28,7 +23,7 @@ for (count in seq(32)) {
 
     print("image saved, job completed")
 
-    Sys.sleep(900) #15 minutes intervals
-}
+#    Sys.sleep(900) #15 minutes intervals
+#}
 print(paste("*** Read all tasks closing at: ", Sys.time()))
 
