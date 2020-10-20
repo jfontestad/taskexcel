@@ -12,4 +12,4 @@ spec:
                     restartPolicy: Never
                     containers:
                     - name: gazzettataskexcelcron
-                      image: efsatsassurance.azurecr.io/taskexcel:latest
+                      image: efsadsreg.azurecr.io/taskexcel
