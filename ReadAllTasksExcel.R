@@ -323,6 +323,7 @@ tib_param = read_csv(csv_fine_str) %>%
 # the next line was eliminated because it is inserted incorrectly by the api of add column
 #   mutate(url = paste("=hyperlink(\"https://tasks.office.com/EFSA815.onmicrosoft.com/en-gb/Home/Task/",id,"\",\"Link\")",sep = "")) %>%
 #   mutate(StepDeadline = "=iferror(IF(offset(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1)<>\"\", NETWORKDAYS.INTL(offset(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1),offset(INDIRECT(ADDRESS(ROW(), COLUMN())),0,1))*VLOOKUP(offset(INDIRECT(ADDRESS(ROW(), COLUMN())),0,11),models!$A$1:$D$200,4,FALSE)+offset(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1),\"\"),\"\")") %>%
+#  select(plan, title, b_name, createdDateTime, startDateTime, StepDeadline, dueDateTime, completedDateTime, priority_names, user_names, categories.x, categories.y, categories.x.x, categories.y.y, eff_points, description, ModelKey, url,search,reminder, txid, late, link) %>%
 tasks_with_bucket_names = all_tasks_tbl %>% left_join(integrated_buckets, by=c("bucketId" = "b_id")) %>%
   left_join(user_tib, by=c('assignments' = 'user_ids')) %>%
   left_join(priority_tib, by=c('priority' = 'priority_ids')) %>%
@@ -335,7 +336,7 @@ tasks_with_bucket_names = all_tasks_tbl %>% left_join(integrated_buckets, by=c("
   mutate(startDateTime = sapply(lapply(startDateTime, function(x) {if (x == "NA") {""} else {x}}), FUN=paste))  %>%   #mutate(dueDateTime = format(dueDateTime, format="%Y-%m-%d")) %>%
   mutate(dueDateTime = sapply(lapply(dueDateTime, function(x) {if (x == "NA") {""} else {x}}), FUN=paste))  %>%   #mutate(dueDateTime = format(dueDateTime, format="%Y-%m-%d")) %>%
   mutate(completedDateTime = sapply(lapply(completedDateTime, function(x) {if (x == "NA") {""} else {x}}), FUN=paste))  %>%   #mutate(dueDateTime = format(dueDateTime, format="%Y-%m-%d")) %>%
-  mutate(eff_points = Points + det_effort_points(categories.x)) %>%
+  mutate(eff_points = paste("+", format(Points + det_effort_points(categories.x), nsmall=2)), sep="") %>%
   mutate(StepDeadline = "=IFERROR(IF(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1)<>\"\", WORKDAY.INTL(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1),ROUNDDOWN(NETWORKDAYS.INTL(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-1),OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,1))*VLOOKUP(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,11),models!$A$1:$D$200,4,FALSE),0)-1),\"\"),\"\")") %>%
   mutate(url = paste("https://tasks.office.com/EFSA815.onmicrosoft.com/en-gb/Home/Task/", id, sep="")) %>%
   mutate(search = "=IFERROR(CONCATENATE(\"https://www.office.com/search?auth=2&q=\",MID(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-17),FIND(\"(TX\",OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-17)),11)),\"\")") %>%   #  mutate(search = "=IFERROR(CONCATENATE(\"https://www.office.com/search?auth=2&q=\",MID(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-17),FIND(\"(TX\",OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-17)),11)),\"") %>%
@@ -344,15 +345,15 @@ tasks_with_bucket_names = all_tasks_tbl %>% left_join(integrated_buckets, by=c("
   mutate(late = "=IFERROR(IF(OR(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-14)>OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-15),AND(OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-14)=\"\", OFFSET(INDIRECT(ADDRESS(ROW(), COLUMN())),0,-15)<NOW())),\"yes\", \"no\"), \"\")") %>%   
   mutate(link = paste("=hyperlink(offset(indirect(address(row(), column())), 0, 17),\"Link\")",sep = "")) %>%
   mutate(ModelKey = paste(plan, b_name, sep = "")) %>%
-  select(plan, title, b_name, createdDateTime, startDateTime, StepDeadline, dueDateTime, completedDateTime, priority_names, user_names, categories.x, categories.y, categories.x.x, categories.y.y, eff_points, description, ModelKey, url,search,reminder, txid, late, link) %>%
+  select(plan, title, b_name, priority_names, user_names, categories.x, categories.y, categories.x.x, categories.y.y, eff_points, description, ModelKey, url,search,reminder, txid, late, createdDateTime, startDateTime, StepDeadline, dueDateTime, completedDateTime, link) %>%
   rename(Plan = plan,
          Title = title,
          Bucket = b_name,
-         Created = createdDateTime,
-         Start = startDateTime, 
-         StepDue = StepDeadline,
-         Due = dueDateTime,
-         Completed = completedDateTime,
+         CreatedDate = createdDateTime,
+         StartDate = startDateTime, 
+         StepDueDate = StepDeadline,
+         DueDate = dueDateTime,
+         CompletedDate = completedDateTime,
          Priority = priority_names,
          Assigned = user_names,
          Effort = categories.x,
@@ -427,15 +428,24 @@ empty_table = function(excel_file_id, task_tbl) {
 }
 
 
-
-add_table_column = function (column_name, new_table, file_id, group_drive_id, value_vec) {
+#add_table_column
+# adds one column to the aggregate excel list
+# the columns are added in the order they come in, except for:
+#  link that is placed exactly at position 2
+#  the dates are inserted last (because inserting a date column makes the
+#   successive columns date columns and that disturbs the reports)
+add_table_column = function (column_name, new_table, file_id, group_drive_id, value_vec,numCol) {
   temp_list = sapply(as.list(value_vec), function(x) list(list(x)))
   temp_list = append(list(list(column_name)), temp_list)
   index = 0
   if(column_name == "link") {
     body_prep = toJSON (list(name = column_name, values=temp_list, index = 2), auto_unbox = TRUE)
   } else {
-    body_prep = toJSON (list(name = column_name, values=temp_list), auto_unbox = TRUE)
+    if (grepl("Date", column_name)) {
+      body_prep = toJSON (list(name = column_name, values=temp_list, index = numCol - 14), auto_unbox = TRUE)
+    } else {
+      body_prep = toJSON (list(name = column_name, values=temp_list), auto_unbox = TRUE)
+    }
   }
   new_column = call_graph_url(me$token,
                               paste("https://graph.microsoft.com/v1.0/drives/",
@@ -459,14 +469,14 @@ update_excel = function(excel_file_id, task_tbl) {
     col_name = names(task_tbl)[[numCol]]
     print(col_name)
     col_value_vec = task_tbl[[numCol]]
-    add_table_column(col_name, new_table, excel_file_id, group_drive_id, col_value_vec)
+    add_table_column(col_name, new_table, excel_file_id, group_drive_id, col_value_vec,numCol)
   }
 }
 
 print("going to update the active excel")
 active_tasks = tasks_with_bucket_names %>%
   filter(Assigned == "unassigned" |Assigned == "AG" | Assigned == "MN" | Assigned == "DP" | Assigned == "ZV" | Assigned == "BG") %>%
-  filter(Completed == "")
+  filter(CompletedDate == "")
 
 update_file = call_graph_url(me$token,
                              paste("https://graph.microsoft.com/v1.0/drives/",group_drive_id,"/root/search(q='{Active+TSTA+Tasks.xlsx}')", sep="")) 
